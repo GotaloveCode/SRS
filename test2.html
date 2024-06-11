@@ -1,0 +1,173 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	body {
+		font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+		text-rendering: optimizelegibility;
+		-moz-osx-font-smoothing: grayscale;
+		-moz-text-size-adjust: none;
+	}
+
+	h1,.muted {
+		color: #2c3e5099;
+	}
+
+	h1 {
+		font-size: 26px;
+		font-weight: 600;
+	}
+
+	#app {
+		max-width: 30em;
+		margin: 1em auto;
+	}
+
+	.danger,.has-error,.text-danger,
+	.danger .dropdown-toggle,
+	.danger .selected-tag {
+		color: red;
+		border-color: red;
+	}
+</style>
+</head>
+<body>
+	<div id="app">
+		<h4>Update Stock</h4>
+		<div class="row">
+			<div class="col-md-8">
+				<div class="form-group">
+					<label>Stationery Item</label>
+					<select name="Stationeryitem" v-model="frmupdate.Item">
+						<option v-for="item in Items" v-bind:value="item">{{item.Title}}</option>
+					</select>
+				</div> 
+
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-4">
+				<div class="form-group">
+					<label>Quantity</label>
+					<input type="number" name="Quantity" v-model="frmupdate.Item.Quantity" class="form-control">
+				</div>
+
+			</div>
+			<div class="col-md-4">
+				<div class="form-group">
+					<label>Unit Cost</label>
+					<input type="text" name="Cost" data-vv-scope="frmupdate" v-model="frmupdate.Item.Cost" class="form-control">
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-8">
+				<div class="form-group"><button class="btn col-md-12 btn-orange" type="button" v-on:click="updateStock()">Update Stock</button></div>
+			</div>
+		</div>
+		{{Items}}
+	</div>
+</div>
+<script src="https://unpkg.com/vue"></script>
+
+<script>
+
+	var app = new Vue({
+		el: '#app',
+		data: {  
+			Items:[{Title:"Notebook",Quantity:1,Cost:300},{Title:"Biro",Quantity:1,Cost:300},{Title:"Pen",Quantity:1,Cost:300}],
+			frmupdate:{Item:{Id:null,Cost:null,Quantity:null}}, 
+		},
+		methods:{
+			updateStock(){    
+				var id = this.frmupdate.Item.Id,title =this.frmupdate.Item.Title,quantity=this.frmupdate.Item.Quantity,cost=this.frmupdate.Item.Cost;
+
+				var i = filteredItemsIndex(id);
+				var n = filteredItems(id);
+
+				n.Title =title;
+				n.Quantity=quantity;
+				n.Cost=cost;
+				this.$set(this.Items.indexOf(n),i,n);
+				this.frmupdate.Item={};
+			},
+			update(){                     
+				var n =filteredItems(1);
+				console.log(n);
+                        //this.$set(this.mylist,1,n);                        
+                    }             
+
+                },			
+
+            });
+
+	function filteredItems(id) {
+		return app.Items.map(function(e) { return e; }).indexOf(id);
+	}
+</script>
+</body>
+</html>
+
+
+<!-- <html>
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</style>
+</head>
+<body>
+	<div id="app">
+		<h1>Vue Select - Validation with VeeValidate</h1>
+
+		<div class="form-group" :class="{'has-error': errors.has('workplancode')}">
+			<label for="workplan code">*Workplan Code:</label>                                           
+			<v-select :options="Workplans" name="workplancode" v-validate="'required'" :class="{'has-error': errors.has('workplancode')}" v-model="reqForm.workplancode"></v-select>                                                 
+			<span class="text-danger" v-show="errors.has('workplancode')">{{ errors.first('workplancode') }}</span>
+		</div>
+
+
+		<v-select :options="options" v-model="email" v-validate:email="'required|email'" name="email" :class="{ danger: errors.has('email') }"></v-select>
+
+		<span v-show="errors.has('email')" class="danger">
+			{{ errors.first('email') }}
+		</span>
+		<br>
+		<br>
+		{{errors}}
+
+		<button class="btn btn-orange col-md-8" type="button" v-on:click="submitRequest" id="submit">SUBMIT REQUEST</button>
+		{{mylist}}
+	</div>
+	<script src="https://unpkg.com/vue@latest"></script>
+	<script type="text/javascript" src="https://unpkg.com/vue-select@latest"></script>
+	<script src="https://unpkg.com/vee-validate@latest"></script>
+	<script>
+		Vue.component('v-select', VueSelect.VueSelect)
+		Vue.use(VeeValidate)
+
+		new Vue({
+			el: '#app',
+			data: {    
+				Workplans:['valid@gmail.com',
+				'invalid email address',
+				],
+				reqForm:{workplan:null,test:null},
+				mylist:[{name:"marto",id:1},{name:"bon",id:2},{name:"steph",id:3}]},
+				email: null   
+			},
+			methods:{
+
+				submitRequest(){
+					this.$validator.validateAll().then((result) => {
+						if (result) {
+							console.log("ndani");
+						}
+					});
+				},
+			}	
+		});
+	</script>
+</body>
+</html> -->

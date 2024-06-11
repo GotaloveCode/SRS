@@ -1,0 +1,503 @@
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs-3.3.7/jqc-1.12.3/dt-1.10.16/r-2.2.1/datatables.min.css"/>
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.7.0/chosen.min.css" >
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css">
+<link rel="stylesheet" href="/srs/SiteAssets/AWF/css/main.css">
+<div class="container-fluid" id="app">
+    <div class="row">
+        <div>
+            <div class="col-md-2 col-sm-4" style="border-right:solid 1px #9ca4ab;min-height:720px">
+                <img src="/ai/SiteAssets/AWF/awf.png" class="img-responsive" alt="AWF">
+                <h4 class="und text-center">Stationery Request Form</h4>
+                <ul class="nav nav-pills nav-stacked">
+                    <li class="active"><a data-toggle="tab" href="#newreqtab"><span class="fa fa-edit"></span> New Request</a></li>
+                    <li><a data-toggle="tab" href="#statustab"><span class="fa fa-hourglass-half"></span> Status</a></li>
+                    <li v-if="admin"><a data-toggle="tab" href="#reviewtab"><span class="fa fa-check-square-o"></span> Review</a></li>
+                    <li v-if="admin"><a data-toggle="tab" href="#reportstab"><span class="fa fa-bar-chart"></span> Reports</a></li>
+                    <li v-if="admin"><a data-toggle="tab" href="#stocktab"><span class="fa fa-cart-plus"></span> Stock</a></li>
+                    <li v-if="admin"><a data-toggle="tab" href="#admintab"><span class="fa fa-cogs"></span> Admin Tab</a></li>
+                </ul>
+            </div>
+            <div class="col-md-10 col-sm-8">
+                <div class="tab-content">
+                    <div id="newreqtab" class="tab-pane fade in active">
+                        <h3 class="und text-center">New Stationery Request</h3>
+                        <div class="row">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-8 col-sm-12">
+                                <div class="col-md-12">
+                                    <div class="form-group"><label for="delivery">Delivered To:</label></div>
+                                    <div class="form-group">                                    
+                                        <label class="radio-inline"><input type="radio" checked="checked" name="optdelivery" value="My Desk" v-model="reqForm.delivery">My Desk</label>
+                                        <label class="radio-inline"><input type="radio" name="optdelivery" value="Meeting Room" v-model="reqForm.delivery">Meeting Room</label>
+                                    </div> 
+                                </div>
+                                <div class="col-md-12" v-if="reqForm.delivery=='Meeting Room'">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="row">                                            
+                                                <div class="col-md-10">
+                                                    <label for="">Date:</label>
+                                                    <div class="form-group">
+                                                       <date-picker v-model="reqForm.requestdate" :config="config"></date-picker>                                                    
+                                                   </div>
+                                               </div>
+                                           </div>
+                                       </div>
+                                       <div class="col-md-4">
+                                        <div class="row">                                            
+                                            <div class="col-md-10">
+                                                <label for="">Meeting room:</label>
+                                                <div class="form-group">
+                                                    <select name="meetingroom" :class="{'has-error': errors.has('meetingroom')}" v-validate="{ rules: { required: reqForm.delivery=='Meeting Room'} }" id="meetingroom" class="form-control" v-model="reqForm.meetingroom" >
+                                                        <option v-for="item in MeetingsList">{{item}}</option>
+                                                    </select>                                                    
+                                                    <span class="text-danger" v-show="errors.has('meetingroom')">{{ errors.first('meetingroom') }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <hr>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group" :class="{'has-error': errors.has('workplancode')}">
+                                            <label for="workplan code">*Workplan Code:</label>                                           
+                                            <v-select :options="Workplans" name="workplancode" id="workplancode" v-validate="'required'" :class="{'has-error': errors.has('undefined')}" v-model="reqForm.workplancode"></v-select>                                                 
+                                            <span class="text-danger" v-show="errors.has('workplancode')">The workplan code is required</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="row">                                            
+                                            <div class="col-md-12">
+                                                <label>Item Description</label>
+                                                <div class="form-group" :class="{'has-error': errors.has('form-1.item')}">
+                                                   <select name="item" id="item" data-vv-scope="form-1" v-model="item" v-validate="'required'" class="form-control" required>
+                                                    <option v-for="item in Items" v-bind:value="item">{{item.Title}}</option>                                                                        
+                                                </select>
+                                            </div>
+                                            <span class="text-danger" v-show="errors.has('form-1.item')">{{ errors.first('form-1.item') }}</span>                                              
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group" :class="{'has-error': errors.has('form-1.qty')}"> 
+                                        <label class="form-control-label" for="qty">Qty</label>
+                                        <div class="row">
+                                         <div class="col-md-4">
+                                          <input type="number" id="qty"  v-model="qty" data-vv-scope="form-1" v-validate="'required|numeric'" name="qty" class="form-control" required>                                               
+                                      </div>
+                                  </div>                                            
+                                  <span class="text-danger" v-show="errors.has('form-1.qty')">{{ errors.first('form-1.qty') }}</span>
+                              </div>
+                          </div>
+                      </div>
+
+                  </div>
+                  <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-8"><button v-on:click="addItem()" type="button" class="btn btn-grey col-md-12">ADD NEW</button></div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <hr>
+                    <h1></h1>
+                </div>
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="tbitems">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Qty</th>
+                                            <th></th>                                                
+                                        </tr>
+                                        <tr v-for="(item,index) in reqForm.itemList">
+                                            <td>{{item.Item}}</td>
+                                            <td>{{item.Qty}}</td>
+                                            <td><span class="fa fa-remove" v-on:click="removeItem(index)"></span></td> 
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" name="List_items" v-model="reqForm.itemList.length" v-validate="'required|numeric|between:1,20'">
+                        <span class="text-danger" v-show="errors.has('List_items')">{{ errors.first('List_items') }}</span>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-8"><button class="btn btn-orange col-md-12" type="button" v-on:click="submitRequest" id="submit">SUBMIT REQUEST</button></div>
+                    </div>
+                </div>
+            </div><div class="col-md-2"></div>
+        </div>
+    </div>
+    <div id="statustab" class="tab-pane fade">
+        <h3 class="und text-center">REQUESTS</h3>
+        <div class="col-md-12">
+            <p class="text-center">Query Reports: Use Filters below to query the system</p>
+            <h1></h1>
+        </div>
+        <div class="col-md-12">
+            <div class="col-md-12 reports"> 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4">From:</div>
+                            <div class="col-md-6">
+                                <div class="form-group">                                            
+                                    <div class="input-group" >
+                                        <date-picker v-model="fromdate" id="date-from"  @dp-change="redrawStatus" :wrap="true" :config="config"></date-picker>                                                
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-4">To:</div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="input-group" >
+                                    <date-picker v-model="todate" @dp-change="redrawStatus" id="date-to" :wrap="true" :config="config"></date-picker>                                                
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>                                            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">                                                    
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-4">Status:</div>
+                        <div class="col-md-6">
+                            <select class="form-control chosen" id="selstatus" data-placeholder="Choose a status" multiple="">
+                                <option v-for="item in statuses">{{item}}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>                                                    
+            </div>
+        </div>                            
+    </div>
+
+    <div class="col-md-12">
+     <h1></h1>                        
+     <table class="table table-bordered table-responsive" id="tbstatus" width="100%">
+        <thead>
+            <tr>
+                <th>Id</th>                                        
+                <th>Requested</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>                                    
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+</div>
+<div id="reviewtab" class="tab-pane fade">
+    <h3 class="und text-center">REQUESTS</h3>
+    <h1></h1>
+    <div class="col-md-12">
+        <table class="table table-responsive table-bordered" id="tbreview" width="100%">
+            <thead>
+                <tr>                                   
+                    <th>Requested</th>
+                    <th>Requested By</th>                                                           
+                    <th>Status</th>
+                    <th>Action</th>                                        
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+<div id="stocktab" class="tab-pane fade">
+    <h3 class="und text-center">Manage Stock</h3>
+    <div class="row">
+        <div class="col-md-6" data-vv-scope="frmadd">
+            <h4>Add Stock</h4>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="Stationery_Item">Stationery Item</label>
+                        <input type="text" data-vv-scope="frmadd" name="Stationery_Item" v-model="frmadd.Item" v-validate="'required'" class="form-control">
+                    </div>
+                    <span class="text-danger" v-show="errors.has('frmadd.Stationery_Item')">{{ errors.first('frmadd.Stationery_Item') }}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="">Quantity</label>
+                        <input type="text" data-vv-scope="frmadd" name="StationeryQuantity" v-model="frmadd.Quantity" v-validate="'required|numeric'" class="form-control">
+                    </div>
+                    <span class="text-danger" v-show="errors.has('frmadd.StationeryQuantity')">{{ errors.first('frmadd.StationeryQuantity') }}</span>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="StationeryCost">Unit Cost</label>
+                        <input type="text" data-vv-scope="frmadd" name="StationeryCost" v-validate="'required|numeric'" v-model="frmadd.Cost" class="form-control">
+                    </div>
+                    <span class="text-danger" v-show="errors.has('frmadd.StationeryCost')">{{ errors.first('frmadd.StationeryCost') }}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group"><button class="col-md-12 btn btn-orange" v-on:click="addStock()" type="button">Add New</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6" data-vv-scope="frmupdate">
+            <h4>Update Stock</h4>
+             <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group" :class="{'has-error': errors.has('frmupdate.Stationeryitem')}">
+                        <label>Stationery Item</label>
+                        <select name="Stationeryitem" v-model="frmupdate.Item" v-validate="'required'" class="form-control" required>
+                            <option v-for="item in Items" v-bind:value="item">{{item.Title}}</option>
+                        </select>
+                    </div> 
+                    <span class="text-danger" v-show="errors.has('frmupdate.Stationeryitem')">{{ errors.first('frmupdate.Stationeryitem') }}</span>   
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group" :class="{'has-error': errors.has('frmupdate.Quantity')}">
+                        <label>Quantity</label>
+                        <input type="number" name="Quantity" data-vv-scope="frmupdate" v-validate="'required|numeric'" v-model="frmupdate.Item.Quantity" class="form-control">
+                    </div>
+                    <span class="text-danger" v-show="errors.has('frmupdate.Quantity')">{{ errors.first('frmupdate.Quantity') }}</span> 
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group" :class="{'has-error': errors.has('frmupdate.Cost')}">
+                        <label>Unit Cost</label>
+                        <input type="text" name="Cost" data-vv-scope="frmupdate" v-validate="'required|numeric'" v-model="frmupdate.Item.Cost" class="form-control">
+                    </div>
+                    <span class="text-danger" v-show="errors.has('frmupdate.Cost')">{{ errors.first('frmupdate.Cost') }}</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group"><button class="btn col-md-12 btn-orange" type="button" v-on:click="updateStock()">Update Stock</button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">        
+        <div class="col-md-8">
+            <h4>Stock</h4>
+            <data-table :stationeries="Items"></data-table>
+        </div>
+    </div>
+</div>
+<div id="reportstab" class="tab-pane fade">
+   <h3 class="und text-center">REPORTS</h3>
+   <div class="col-md-12">
+    <p class="text-center">Query Reports: Use Filters below to query the system</p>
+    <h1></h1>
+</div>
+<div class="col-md-12">
+    <div class="col-md-12 reports"> 
+        <div class="row">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-4">From:</div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <date-picker id="rptdate-from" v-model="rfrom"  @dp-change="redrawReport" :wrap="true" :config="config"></date-picker>                                                
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-4">To:</div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <date-picker id="rptdate-to" @dp-change="redrawReport" v-model="rto" :wrap="true" :config="config"></date-picker>                                                
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">                                                    
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-4">Workplans:</div>
+                    <div class="col-md-6">
+                        <select class="form-control" id="selworkplan" data-placeholder="Choose a workplan" multiple="">
+                        </select>                                       
+                    </div>
+                </div>
+            </div> 
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-4">Requested By:</div>
+                    <div class="col-md-6">
+                        <select class="form-control" id="selRequestedby" data-placeholder="All" multiple="">
+                        </select>
+                    </div>
+                </div>
+            </div>                                                    
+        </div>
+    </div>                            
+</div>
+<h1></h1>
+<div class="col-md-12">
+    <table class="table table-responsive table-bordered" id="tbreport" width="100%">
+        <thead>
+            <tr>
+                <th>Requested</th>
+                <th>Requested By</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Unit Cost</th>
+                <th>Workplan</th>
+                <th>To</th>
+                <th>M. Date</th>
+                <th>Room</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>            
+</div>
+</div>
+<div id="admintab" class="tab-pane fade">
+    <h3 class="und text-center">ADMIN TAB</h3>
+    <div class="col-md-12 text-center">
+        <a class="btn-danger btn" href="#" onclick="loadDocFrames('/Lists/Supervisor/AllItems.aspx');">Manage Admins</a>
+        <a class="btn-danger btn" href="#" onclick="loadDocFrames('/Lists/Meeting%20Rooms/AllItems.aspx');">Manage Meeting Rooms</a>
+        <a class="btn-danger btn" href="#" onclick="loadDocFrames('/Lists/Stationery%20Items/AllItems.aspx');">Manage Stock</a>
+        <a class="btn-danger btn" href="#" onclick="loadDocFrames('/Lists/Workplan/AllItems.aspx');">Manage Workplan</a>
+        <a href="#" onclick="loadDocFrames('/_layouts/15/viewlsts.aspx?view=14');" class="btn btn-danger">View All</a>
+    </div>
+    <div class="col-md-12"><h1></h1></div>
+    <div class="main-loader">
+        <div class="sk-cube-grid">
+            <div class="sk-cube sk-cube1"></div>
+            <div class="sk-cube sk-cube2"></div>
+            <div class="sk-cube sk-cube3"></div>
+            <div class="sk-cube sk-cube4"></div>
+            <div class="sk-cube sk-cube5"></div>
+            <div class="sk-cube sk-cube6"></div>
+            <div class="sk-cube sk-cube7"></div>
+            <div class="sk-cube sk-cube8"></div>
+            <div class="sk-cube sk-cube9"></div>
+        </div>
+    </div>
+    <div id="documents-iframe"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal-->
+<div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">           
+        <div class="modal-content">
+            <div class="modal-header bg-orange">
+                <h5 class="modal-title">Stationery Request List</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+             <div class="sk-cube-grid">
+                <div class="sk-cube sk-cube1"></div>
+                <div class="sk-cube sk-cube2"></div>
+                <div class="sk-cube sk-cube3"></div>
+                <div class="sk-cube sk-cube4"></div>
+                <div class="sk-cube sk-cube5"></div>
+                <div class="sk-cube sk-cube6"></div>
+                <div class="sk-cube sk-cube7"></div>
+                <div class="sk-cube sk-cube8"></div>
+                <div class="sk-cube sk-cube9"></div>
+            </div>
+            <input type="hidden" id="approveid">
+            <div class="row">
+                <div class="col-md-6" v-if="review">
+                    <div class="form-group">
+                      <button class="btn-success btn" id="btnapprove">Mark as Complete</button>  
+                    </div>                            
+                </div>
+                <div class="col-md-6" v-if="btndel">
+                    <div class="form-group">
+                      <button class="btn-danger btn" id="btndel">Delete</button>  
+                    </div>                            
+                </div>  
+            </div>
+          <div class="row">                        
+             <div class="col-md-12">
+                 <table class="table table-bordered table-responsive" id="statlist" style="display:none">
+                  <thead>
+                   <tr>
+                    <th>#</th>
+                    <th>Item</th>
+                    <th>Requested</th>
+                    <th v-if="admin">Available</th>
+                    <th>Workplan</th>
+                    <th>Date</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>                    
+</div>
+</div>
+</div>
+</div>
+</div>
+<script src="https://unpkg.com/vue@latest"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs-3.3.7/jqc-1.12.3/dt-1.10.16/r-2.2.1/datatables.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/vue-select@latest"></script>
+<script src="https://unpkg.com/vee-validate@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.16/sorting/datetime-moment.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+<script src="https://unpkg.com/vue-bootstrap-datetimepicker"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.7.0/chosen.jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
+<script type="text/javascript"  src="_layouts/15/sp.js"></script>
+<script src="/srs/SiteAssets/AWF/js/RestBatchExecutor.js" type="text/javascript"></script>
+<script src="/srs/SiteAssets/AWF/js/app.js" type="text/javascript"></script>
